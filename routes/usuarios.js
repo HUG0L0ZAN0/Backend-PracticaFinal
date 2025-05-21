@@ -1,6 +1,36 @@
 const express = require('express');
 const router = express.Router();
+const auth    = require('../middleware/auth');
 const { sql, pool, poolConnect } = require('../dbconfig');
+
+// POST /api/usuarios
+router.post('/', async (req, res) => {
+  const { username, password, email } = req.body;
+  await poolConnect;
+  try {
+    // 1) Hashear la contraseña
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // 2) Guardar el hash en lugar del texto plano
+    const result = await pool
+      .request()
+      .input('username', sql.NVarChar(50), username)
+      .input('password', sql.NVarChar(255), password_hash)
+      .input('email',    sql.NVarChar(100), email)
+      .query(`
+        INSERT INTO UsuariosHugo (username, password, email)
+        OUTPUT INSERTED.*
+        VALUES (@username, @password, @email)
+      `);
+    res.status(201).json(result.recordset[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al crear usuario');
+  }
+});
+
+router.use(auth);
+
 
 // GET /api/usuarios
 router.get('/', async (req, res) => {
@@ -31,48 +61,42 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/usuarios
-router.post('/', async (req, res) => {
-  const { username, password, email } = req.body;
-  await poolConnect;
-  try {
-    const result = await pool
-      .request()
-      .input('username', sql.NVarChar(50), username)
-      .input('password', sql.NVarChar(255), password)
-      .input('email', sql.NVarChar(100), email)
-      .query(`
-        INSERT INTO UsuariosHugo (username, password, email)
-        OUTPUT INSERTED.*
-        VALUES (@username, @password, @email)
-      `);
-    res.status(201).json(result.recordset[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error al crear usuario');
-  }
-});
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
+
+
 
 // PUT /api/usuarios/:id
 router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  const { username, password, email } = req.body;
+  let { username, password, email } = req.body;
   await poolConnect;
   try {
-    const result = await pool
-      .request()
-      .input('id', sql.Int, id)
+    // Si el cliente envió nueva contraseña, la hasheamos
+    let password_hash = null;
+    if (password) {
+      password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+    }
+
+    // Construimos dinámicamente la query
+    const query = `
+      UPDATE UsuariosHugo
+      SET username = @username,
+          ${password_hash ? 'password = @password,' : ''}
+          email    = @email
+      OUTPUT INSERTED.*
+      WHERE id = @id
+    `;
+    const request = pool.request()
+      .input('id',       sql.Int,         id)
       .input('username', sql.NVarChar(50), username)
-      .input('password', sql.NVarChar(255), password)
-      .input('email', sql.NVarChar(100), email)
-      .query(`
-        UPDATE UsuariosHugo
-        SET username = @username,
-            password = @password,
-            email    = @email
-        OUTPUT INSERTED.*
-        WHERE id = @id
-      `);
+      .input('email',    sql.NVarChar(100), email);
+
+    if (password_hash) {
+      request.input('password', sql.NVarChar(255), password_hash);
+    }
+
+    const result = await request.query(query);
     if (!result.recordset.length) return res.status(404).send('Usuario no encontrado');
     res.json(result.recordset[0]);
   } catch (err) {
@@ -80,6 +104,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).send('Error al actualizar usuario');
   }
 });
+
 
 // DELETE /api/usuarios/:id
 router.delete('/:id', async (req, res) => {
