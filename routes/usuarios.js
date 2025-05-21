@@ -3,6 +3,8 @@ const router = express.Router();
 const auth    = require('../middleware/auth');
 const { sql, pool, poolConnect } = require('../dbconfig');
 
+router.use(auth);
+
 // POST /api/usuarios
 router.post('/', async (req, res) => {
   const { username, password, email } = req.body;
@@ -28,8 +30,6 @@ router.post('/', async (req, res) => {
     res.status(500).send('Error al crear usuario');
   }
 });
-
-router.use(auth);
 
 
 // GET /api/usuarios
