@@ -1,0 +1,26 @@
+{
+  "name": "backend-practicafinal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dbconfig.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HUG0L0ZAN0/Backend-PracticaFinal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HUG0L0ZAN0/Backend-PracticaFinal/issues"
+  },
+  "homepage": "https://github.com/HUG0L0ZAN0/Backend-PracticaFinal#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mssql": "^11.0.1"
+  }
+}
