@@ -3,7 +3,6 @@ const router = express.Router();
 const auth    = require('../middleware/auth');
 const { sql, pool, poolConnect } = require('../dbconfig');
 
-router.use(auth);
 
 // POST /api/usuarios
 router.post('/', async (req, res) => {
@@ -31,6 +30,8 @@ router.post('/', async (req, res) => {
   }
 });
 
+
+router.use(auth);
 
 // GET /api/usuarios
 router.get('/', async (req, res) => {
