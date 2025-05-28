@@ -46,6 +46,12 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`API corriendo en http://localhost:${PORT}/api/usuarios`)
-);
+
+// Solo iniciamos el servidor si no estamos en modo test
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () =>
+    console.log(`API corriendo en http://localhost:${PORT}/api/usuarios`)
+  );
+}
+
+module.exports = app;
