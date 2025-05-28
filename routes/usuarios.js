@@ -3,7 +3,42 @@ const router = express.Router();
 const auth    = require('../middleware/auth');
 const { sql, pool, poolConnect } = require('../dbconfig');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Operaciones sobre usuarios
+ */
 
+/**
+ * @swagger
+ * /api/usuarios:
+ *   post:
+ *     summary: Crea un nuevo usuario
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *               - email
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Usuario creado
+ *       500:
+ *         description: Error al crear usuario
+ */
 // POST /api/usuarios
 router.post('/', async (req, res) => {
   const { username, password, email } = req.body;
@@ -33,6 +68,20 @@ router.post('/', async (req, res) => {
 
 router.use(auth);
 
+/**
+ * @swagger
+ * /api/usuarios:
+ *   get:
+ *     summary: Obtiene todos los usuarios
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios
+ *       500:
+ *         description: Error al obtener usuarios
+ */
 // GET /api/usuarios
 router.get('/', async (req, res) => {
   await poolConnect;
@@ -45,6 +94,29 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/usuarios/{id}:
+ *   get:
+ *     summary: Obtiene un usuario por ID
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Usuario encontrado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al obtener usuario
+ */
 // GET /api/usuarios/:id
 router.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
@@ -67,6 +139,42 @@ const SALT_ROUNDS = 10;
 
 
 
+/**
+ * @swagger
+ * /api/usuarios/{id}:
+ *   put:
+ *     summary: Actualiza un usuario por ID
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Usuario actualizado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al actualizar usuario
+ */
 // PUT /api/usuarios/:id
 router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);
@@ -107,6 +215,29 @@ router.put('/:id', async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /api/usuarios/{id}:
+ *   delete:
+ *     summary: Elimina un usuario por ID
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al eliminar usuario
+ */
 // DELETE /api/usuarios/:id
 router.delete('/:id', async (req, res) => {
   const id = parseInt(req.params.id, 10);

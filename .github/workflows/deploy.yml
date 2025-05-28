@@ -1,0 +1,29 @@
+name: Backend Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: lint_and_test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Prepare zip package
+        run: |
+          rm -f backend.zip
+          zip -r backend.zip * .[^.]* \
+            -x "node_modules/*" ".env" "tests/*"
+
+      - name: Deploy via ZipDeploy
+        env:
+          AZURE_USER:     ${{ secrets.AZURE_DEPLOY_USER }}
+          AZURE_PASSWORD: ${{ secrets.AZURE_DEPLOY_PASSWORD }}
+        run: |
+          curl -X POST "https://spidersap.scm.azurewebsites.net/api/zipdeploy" \
+            --user "$AZURE_USER:$AZURE_PASSWORD" \
+            --data-binary @"backend.zip"
